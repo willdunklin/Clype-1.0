@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"main","l":"ClypeClient"},{"p":"data","l":"ClypeData"},{"p":"main","l":"ClypeServer"},{"p":"data","l":"FileClypeData"},{"p":"data","l":"MessageClypeData"}]
