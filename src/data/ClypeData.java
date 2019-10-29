@@ -1,5 +1,6 @@
 package data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -8,8 +9,12 @@ import java.util.Date;
  * @author Will Dunklin
  *
  */
-public abstract class ClypeData {
+public abstract class ClypeData implements Serializable{
 
+	/**
+	 * Unique identifier for ClypeData during serialization
+	 */
+	private static final long serialVersionUID = 2118161826944087701L;
 	/**
 	 * The name of the sending user
 	 */

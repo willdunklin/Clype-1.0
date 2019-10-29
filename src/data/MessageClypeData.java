@@ -11,6 +11,10 @@ package data;
 public class MessageClypeData extends ClypeData {
 
 	/**
+	 * Unique identifier for MessageClypeData during serialization
+	 */
+	private static final long serialVersionUID = -7186030942149378453L;
+	/**
 	 * The text component of the message
 	 */
 	private String message;

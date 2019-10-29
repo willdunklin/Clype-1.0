@@ -18,6 +18,10 @@ import java.io.OutputStreamWriter;
 public class FileClypeData extends ClypeData {
 
 	/**
+	 * Unique identifier for FileClypeData during serialization
+	 */
+	private static final long serialVersionUID = 3748448475358474427L;
+	/**
 	 * The name of the file being sent
 	 */
 	private String fileName;

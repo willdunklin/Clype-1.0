@@ -1,6 +1,12 @@
 package main;
 
-import data.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import data.ClypeData;
 
 /**
  * Class that runs Clype's internal server.
@@ -27,20 +33,32 @@ public class ClypeServer {
 	 * Data to be sent to a client
 	 */
 	private ClypeData dataToSendToClient;
-	
 	/**
 	 * The default port is 7000
 	 */
 	private static final int defaultPort = 7000;
+	/**
+	 * Receives serialized data from ClypeClient
+	 */
+	private ObjectInputStream inFromClient;
+	/**
+	 * Sends serialized data to ClypeClient
+	 */
+	private ObjectOutputStream outToClient;
 	
 	/**
 	 * Initializes ClypeServer instance variables
 	 * @param port The port the server is hosted on
+	 * @throws IllegalArgumentException If the port is invalid
 	 */
-	public ClypeServer(int port) {
+	public ClypeServer(int port) throws IllegalArgumentException {
+		if(port < 1024)
+			throw new IllegalArgumentException("ClypeServer cannot be intitalized with that port");
 		this.port = port;
 		this.dataToSendToClient = null;
 		this.dataToReceiveFromClient = null;
+		this.inFromClient = null;
+		this.outToClient = null;
 	}
 
 	/**
@@ -51,24 +69,79 @@ public class ClypeServer {
 	}
 	
 	/**
+	 * Main method called on start
+	 * @param args Command line arguments
+	 */
+	public static void main(String[] args) {
+		ClypeServer server;
+		if(args.length == 0) {
+			server = new ClypeServer();
+		} else {
+			String[] part1 = args[0].split("@");
+			try {
+				server = new ClypeServer(Integer.parseInt(part1[0]));
+			} catch(NumberFormatException nfe) {
+				throw new NumberFormatException("Port entered incorrectly.");
+			}
+		}
+		server.start();
+	}
+	
+	/**
 	 * Starts the server
 	 */
 	public void start() {
-		
+		System.out.println("Starting server");
+		try {
+			ServerSocket sskt = new ServerSocket(port);
+			System.out.println("Waiting to accept client");
+			Socket client = sskt.accept();
+			System.out.println("Accepted client");
+			outToClient = new ObjectOutputStream(client.getOutputStream());
+			inFromClient = new ObjectInputStream(client.getInputStream());
+			while(!closeConnection) {
+				receiveData();
+				sendData();
+			}
+			sskt.close();
+			client.close();
+			outToClient.close();
+			inFromClient.close();
+		} catch (IOException ioe) {
+			System.err.println("An error occurred.");
+		}
 	}
 	
 	/**
 	 * Receives data from client
 	 */
 	public void receiveData() {
-		
+		try {
+			dataToReceiveFromClient = (ClypeData) inFromClient.readObject();
+			dataToSendToClient = dataToReceiveFromClient;
+			
+			System.out.println(dataToReceiveFromClient.toString());
+			
+			if(dataToReceiveFromClient.getType() == ClypeData.exit)
+				closeConnection = true;
+		} catch (ClassNotFoundException cnfe) {
+			System.err.println("Class was not found.");
+		} catch (IOException ioe) {
+			if(ioe.getMessage().equals("Connection reset"))
+				closeConnection = true;
+			System.err.println("An error occurred.");
+		}
 	}
 	
 	/**
 	 * Sends data to client
 	 */
 	public void sendData() {
-		
+		try {
+			outToClient.writeObject(dataToSendToClient);
+		} catch (IOException ioe) {
+			System.err.println("An error occurred. "+ioe.getMessage());
+		}
 	}
 
 	/**
